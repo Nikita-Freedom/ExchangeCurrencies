@@ -9,3 +9,6 @@ rootProject.name = "ExchangeCurrencies"
 include ':app'
 include ':navigation'
 include ':core'
+include ':feature:mainfeature'
+include ':feature:data'
+include ':feature:domain'
