@@ -1,4 +1,4 @@
-package com.example.exchangecurrencies.main.data
+package com.example.exchangecurrencies.main
 
 import com.example.exchangecurrencies.domain.entity.SortConfiguration
 import com.example.exchangecurrencies.main.data.entity.CurrenciesNetworkModel

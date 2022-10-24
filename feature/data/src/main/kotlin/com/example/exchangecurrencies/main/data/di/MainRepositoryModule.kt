@@ -1,6 +1,6 @@
 package com.example.exchangecurrencies.main.data.di
 
-import com.example.exchangecurrencies.main.data.MainRepository
+import com.example.exchangecurrencies.main.MainRepository
 import com.example.exchangecurrencies.main.data.MainRepositoryImpl
 import dagger.Binds
 import dagger.Module
