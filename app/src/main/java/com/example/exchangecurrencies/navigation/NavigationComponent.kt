@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.example.exchangecurrencies.main.navigation.addMainFeatureGraph
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -25,6 +26,6 @@ fun NavigationComponent(
     navController = navController,
     startDestination = NavTarget.RootModule.route
   ) {
-    // TODO add mainFeatureGraph
+    addMainFeatureGraph() { navController.popBackStack() }
   }
 }
