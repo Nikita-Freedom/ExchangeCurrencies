@@ -1,0 +1,92 @@
+before_script:
+  - export GRADLE_USER_HOME=/cache/.gradle
+  # Gradle daemon can be enabled using a certain tricks (see TBI commit 872e4881773),
+  # but this uncovers a lot of bugs in kapt/gradle plugins, because for some reason
+  # daemons seem to be shared between different builds on the same runner.
+  # We are not the only ones who have problems with this, see:
+  # https://github.com/gradle/gradle/issues/5998
+  - export GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx6g"
+  - export ANDROID_HOME=/opt/android-sdk-linux
+  - chmod +x ./gradlew
+
+stages:
+  - build
+
+# checks compilation of all builds
+check-all-build-types:
+  stage: build
+  only:
+    - schedules
+  tags:
+    - android-java11
+  script:
+    - ./gradlew ktlint detekt
+    # splitting into several gradle commands and giving them more memory, otherwise it
+    # tends to eat all RAM and hang until timed out on "minifyWithR8" tasks
+    - ./gradlew assembleDebug assembleInternal
+    - ./gradlew assembleExternal assembleAlpha assembleRelease
+    # See NOTE_LINT_IS_DISABLED
+    # - ./gradlew lintDebug
+
+# assembles dev build
+dev-build:
+  stage: build
+  except:
+    - tags
+    - schedules
+  tags:
+    - android-java11
+  script:
+    - ./gradlew ktlint detekt assembleDebug testDebugUnitTest
+    # See NOTE_LINT_IS_DISABLED
+    #- ./gradlew lintDebug
+
+internal-build:
+  stage: build
+  only:
+    - /-internal$/
+  tags:
+    - android-java11
+  artifacts:
+      expire_in: 1 week
+      paths:
+        - app/build/outputs/apk/internal/*.apk
+  script:
+    # build in parallel so that gradle can cache tasks,
+    # then publish with parallel build disabled (this causes issues)
+    - ./gradlew assembleInternal
+    - ./gradlew appCenterDistributionUploadInternal
+    - ./gradlew sendSlackChangelogInternal
+
+external-build:
+  stage: build
+  only:
+    - /-external$/
+  tags:
+    - android-java11
+  artifacts:
+      expire_in: 1 week
+      paths:
+        - app/build/outputs/apk/external/*.apk
+  script:
+    # build in parallel so that gradle can cache tasks,
+    # then publish with parallel build disabled (this causes issues)
+    - ./gradlew assembleExternal
+    - ./gradlew appCenterDistributionUploadExternal
+    - ./gradlew sendSlackChangelogExternal
+
+release-build:
+  stage: build
+  only:
+    - /-release$/
+  tags:
+    - android-java11
+  artifacts:
+      expire_in: 1 week
+      paths:
+        - app/build/outputs/bundle/release/*.aab
+  script:
+    # build in parallel so that gradle can cache tasks,
+    # then publish with parallel build disabled (this causes issues)
+    - ./gradlew bundleRelease
+    - ./gradlew sendSlackChangelogRelease
