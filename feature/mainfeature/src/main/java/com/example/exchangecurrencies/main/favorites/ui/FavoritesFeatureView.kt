@@ -1,4 +1,4 @@
-package com.example.exchangecurrencies.main.mainfeature.ui
+package com.example.exchangecurrencies.main.favorites.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -23,6 +22,8 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -39,12 +40,9 @@ import com.example.exchangecurrencies.components.BottomSheetExpandHideEffect
 import com.example.exchangecurrencies.components.EmptyContentMessage
 import com.example.exchangecurrencies.components.HorizontalDivider
 import com.example.exchangecurrencies.components.RateItem
-import com.example.exchangecurrencies.components.Spinner
 import com.example.exchangecurrencies.components.SwipeRefresh
 import com.example.exchangecurrencies.components.TopAppBar
-import com.example.exchangecurrencies.core.R.drawable
 import com.example.exchangecurrencies.domain.entity.SortConfiguration
-import com.example.exchangecurrencies.domain.entity.SortConfiguration.SortDirection
 import com.example.exchangecurrencies.main.component.SortOptionSelector
 import com.example.exchangecurrencies.main.domain.entity.RateDomainModel
 import com.example.exchangecurrencies.mainfeature.R
@@ -52,13 +50,13 @@ import com.example.exchangecurrencies.ui.theme.ExchangeCurrenciesTheme
 import com.example.exchangecurrencies.ui.theme.Shapes
 
 @Composable
-fun MainFeatureView(viewModel: MainFeatureViewModel) {
-  MainScreen(viewModel)
+fun FavoritesFeatureView(viewModel: FavoritesFeatureViewModel) {
+  FavoritesScreen(viewModel)
 }
 
 
 @Composable
-fun MainScreen(viewModel: MainFeatureViewModel) {
+fun FavoritesScreen(viewModel: FavoritesFeatureViewModel) {
 
   val uiStateFlow by viewModel.uiStateFlow.collectAsState()
   val uiState by viewModel.uiState
@@ -69,12 +67,6 @@ fun MainScreen(viewModel: MainFeatureViewModel) {
     onRefresh = {
       viewModel.observeData()
     },
-    onFavoriteClick = { rate ->
-      viewModel.addToFavorites(rate)
-    },
-    loadRatesByCurrency = { currency ->
-      viewModel.selectBaseCurrency(currency)
-    },
     applySortConfiguration = { sortConfiguration ->
       viewModel.applySortConfiguration(sortConfiguration)
     },
@@ -83,68 +75,73 @@ fun MainScreen(viewModel: MainFeatureViewModel) {
     },
     changeSorting = {
       viewModel.changeSorting()
+    },
+    removeAll = {
+      viewModel.removeAll()
+    },
+    onFavoriteClick = { rate ->
+      viewModel.removeFromFavoritesByName(rate)
     }
   )
 }
 
 @Composable
 private fun MainContent(
-  uiState: MainFeatureUIState,
+  uiState: FavoritesFeatureUIState,
   uiStateFlow: State,
-  onRefresh: (String) -> Unit,
-  onFavoriteClick: (RateDomainModel) -> Unit,
-  loadRatesByCurrency: (String) -> Unit,
+  onRefresh: () -> Unit,
   applySortConfiguration: (SortConfiguration) -> Unit,
   dismissSortConfigurationDialog: () -> Unit,
   changeSorting: () -> Unit,
+  removeAll: () -> Unit,
+  onFavoriteClick: (RateDomainModel) -> Unit,
 ) {
   when (uiState) {
-    is MainFeatureUIState.Error -> {
-      uiState.state.message?.let { error ->
+    is FavoritesFeatureUIState.Error -> {
+      uiState.state.message?.let {
         EmptyContentMessage(
-          imgRes = drawable.img_status_disclaimer_170,
+          imgRes = com.example.exchangecurrencies.core.R.drawable.img_status_disclaimer_170,
           title = "Ошибка",
-          description = error,
+          description = it,
         )
       }
     }
 
-    MainFeatureUIState.Initial -> {
+    FavoritesFeatureUIState.Initial -> {
       ContentLoadingState()
     }
 
-    is MainFeatureUIState.Loaded -> {
+    is FavoritesFeatureUIState.Loaded -> {
       ScreenSlot(
-        loadRatesByCurrency = loadRatesByCurrency,
         changeSorting = changeSorting,
-        selectedBaseCurrency = uiState.state.baseCurrency,
         sortConfiguration = uiStateFlow.sortConfiguration,
+        removeAll = removeAll
       ) {
-        if (uiState.state.rates != null) {
+        if (uiState.state.favoriteRates != null) {
           ContentStateReady(
             state = uiStateFlow,
-            onRefresh = { onRefresh(uiState.state.baseCurrency) },
-            onFavoriteClick = onFavoriteClick,
+            onRefresh = onRefresh,
             applySortConfiguration = applySortConfiguration,
             dismissSortConfigurationDialog = dismissSortConfigurationDialog,
-            rates = uiState.state.rates,
+            rates = uiState.state.favoriteRates,
+            isRefreshing = uiState.state.refreshInProgress,
+            onFavoriteClick = onFavoriteClick
             //isFavorite = uiState.state.isFavorite
           )
         } else {
           EmptyContentMessage(
-            imgRes = drawable.img_status_disclaimer_170,
-            title = "Валюты",
-            description = "Данных нет",
+            imgRes = com.example.exchangecurrencies.core.R.drawable.img_status_disclaimer_170,
+            title = "Избранное",
+            description = "Список пуст",
           )
         }
       }
     }
 
-    is MainFeatureUIState.Loading -> {
+    is FavoritesFeatureUIState.Loading -> {
       ScreenSlot(
-        loadRatesByCurrency = loadRatesByCurrency,
         changeSorting = changeSorting,
-        selectedBaseCurrency = uiState.state.baseCurrency
+        removeAll = removeAll
       ) {
         ContentLoadingState()
       }
@@ -152,14 +149,16 @@ private fun MainContent(
   }
 }
 
+
 @Composable
 private fun ContentStateReady(
   state: State,
   rates: List<RateDomainModel>,
   onRefresh: () -> Unit,
-  onFavoriteClick: (RateDomainModel) -> Unit,
   applySortConfiguration: (SortConfiguration) -> Unit,
   dismissSortConfigurationDialog: () -> Unit,
+  isRefreshing: Boolean,
+  onFavoriteClick: (RateDomainModel) -> Unit,
   // isFavorite: Boolean
 ) {
   ModalBottomSheetScaffold(
@@ -167,9 +166,10 @@ private fun ContentStateReady(
     content = {
       ContentMain(
         onRefresh = onRefresh,
-        onFavoriteClick = onFavoriteClick,
         rates = rates,
-        // isFavorite = isFavorite,
+        isRefreshing = isRefreshing,
+        onFavoriteClick = onFavoriteClick
+        //  isFavorite = isFavorite
       )
     },
     applySortConfiguration = applySortConfiguration,
@@ -177,30 +177,6 @@ private fun ContentStateReady(
   )
 }
 
-@Composable
-private fun ContentMain(
-  modifier: Modifier = Modifier,
-  rates: List<RateDomainModel>,
-  onRefresh: () -> Unit,
-  onFavoriteClick: (RateDomainModel) -> Unit,
-  //isFavorite: Boolean
-) {
-  Box(
-    modifier = modifier
-      .fillMaxSize()
-  ) {
-    SwipeRefresh(
-      isRefreshing = false,
-      onRefresh = onRefresh,
-    ) {
-      RatesList(
-        rates = rates,
-        onFavoriteClick = onFavoriteClick,
-        //  isFavorite = isFavorite
-      )
-    }
-  }
-}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -265,8 +241,8 @@ private fun ModalSheetContent(
       onDirectionClick = {
         sortConfiguration = sortConfiguration.let { configuration ->
           val newDirection = when (configuration.direction) {
-            SortDirection.Ascending -> SortDirection.Descending
-            SortDirection.Descending -> SortDirection.Ascending
+            SortConfiguration.SortDirection.Ascending -> SortConfiguration.SortDirection.Descending
+            SortConfiguration.SortDirection.Descending -> SortConfiguration.SortDirection.Ascending
           }
           configuration.copy(direction = newDirection)
         }
@@ -285,10 +261,43 @@ private fun ModalSheetContent(
 
 
 @Composable
+private fun ContentMain(
+  modifier: Modifier = Modifier,
+  rates: List<RateDomainModel>,
+  onRefresh: () -> Unit,
+  isRefreshing: Boolean,
+  onFavoriteClick: (RateDomainModel) -> Unit,
+//  isFavorite: Boolean,
+) {
+  Box(
+    modifier = modifier.fillMaxSize(),
+    contentAlignment = Alignment.TopCenter
+  ) {
+    SwipeRefresh(
+      isRefreshing = isRefreshing,
+      onRefresh = onRefresh,
+    ) {
+      if (rates.isNotEmpty()) {
+        FavoritesList(
+          rates = rates,
+          onFavoriteClick = onFavoriteClick
+          //   isFavorite = isFavorite
+        )
+      } else {
+        EmptyContentMessage(
+          imgRes = com.example.exchangecurrencies.core.R.drawable.img_status_disclaimer_170,
+          title = "Избранное",
+          description = "Список пуст",
+        )
+      }
+    }
+  }
+}
+
+@Composable
 private fun ScreenSlot(
-  loadRatesByCurrency: (String) -> Unit,
   changeSorting: () -> Unit,
-  selectedBaseCurrency: String,
+  removeAll: () -> Unit,
   sortConfiguration: SortConfiguration? = null,
   content: @Composable () -> Unit,
 ) {
@@ -298,19 +307,20 @@ private fun ScreenSlot(
   ) {
     TopAppBar(
       leftContent = {
-        SelectBaseCurrencySpinner(
-          modifier = Modifier.padding(start = 8.dp),
-          onItemSelected = { currency ->
-            loadRatesByCurrency(currency)
-          },
-          selectedBaseCurrency = selectedBaseCurrency,
-          options = listOf("RUB", "USD", "EUR")
-        )
+        IconButton(
+          modifier = Modifier.padding(horizontal = 6.dp),
+          onClick = removeAll
+        ) {
+          Icon(
+            imageVector = Icons.Default.Delete,
+            contentDescription = "delete all"
+          )
+        }
       },
       centerContent = {
         Text(
-          modifier = Modifier.padding(start = 58.dp),
-          text = "Валюты",
+          modifier = Modifier.padding(start = 46.dp),
+          text = "Избранное",
           color = ExchangeCurrenciesTheme.colors.black,
           style = ExchangeCurrenciesTheme.typography.title1
         )
@@ -348,49 +358,27 @@ private fun ScreenSlot(
 }
 
 @Composable
-fun SelectBaseCurrencySpinner(
-  modifier: Modifier = Modifier,
-  onItemSelected: (String) -> Unit,
-  selectedBaseCurrency: String,
-  options: List<String>
-) {
-  Spinner(
-    modifier = modifier,
-    options = options,
-    dropDownModifier = Modifier.wrapContentSize(),
-    onItemSelected = onItemSelected,
-    dropdownItemFactory = { item, _ ->
-      Text(
-        text = item,
-        color = ExchangeCurrenciesTheme.colors.contendAccentTertiary
-      )
-    },
-    selectedText = selectedBaseCurrency,
-  )
-}
-
-
-@Composable
-private fun RatesList(
+private fun FavoritesList(
   modifier: Modifier = Modifier,
   rates: List<RateDomainModel>,
   onFavoriteClick: (RateDomainModel) -> Unit,
   // isFavorite: Boolean
 ) {
   val listState = rememberLazyListState()
+
   LazyColumn(
-    modifier = modifier.padding(horizontal = 8.dp),
+    modifier = modifier.padding(horizontal = 16.dp),
     state = listState
   ) {
     items(
-      items = rates
+      items = rates,
     ) { rate ->
-      rate.currencyName?.let { currencyName ->
+      rate.currencyName?.let {
         RateItem(
-          currency = currencyName,
+          currency = it,
           value = rate.currencyValue.toString(),
+          isFavorite = rate.isFavorite,
           onFavoriteClick = { onFavoriteClick(rate) },
-          isFavorite = rate.isFavorite
         )
       }
     }
@@ -405,7 +393,7 @@ private fun ContentLoadingState() {
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
     CircularProgressIndicator(
-      color = ExchangeCurrenciesTheme.colors.contendAccentTertiary
+      color = ExchangeCurrenciesTheme.colors.contendTertiary
     )
   }
 }
