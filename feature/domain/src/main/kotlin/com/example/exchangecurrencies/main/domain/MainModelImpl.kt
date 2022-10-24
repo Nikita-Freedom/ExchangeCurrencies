@@ -7,7 +7,7 @@ import com.example.exchangecurrencies.main.domain.mappers.toStorageRate
 import com.example.exchangecurrencies.main.domain.mappers.toStorageRates
 import com.example.exchangecurrencies.domain.entity.SortConfiguration
 import com.example.exchangecurrencies.domain.entity.mapDistinctNotNullChanges
-import com.example.exchangecurrencies.main.data.MainRepository
+import com.example.exchangecurrencies.main.MainRepository
 import com.example.exchangecurrencies.main.data.storage.entity.RateStorageModel
 import com.example.exchangecurrencies.main.domain.entity.CurrencyDomainModel
 import com.example.exchangecurrencies.main.domain.entity.RateDomainModel

@@ -1,6 +1,7 @@
 package com.example.exchangecurrencies.main.data
 
 import com.example.exchangecurrencies.domain.entity.SortConfiguration
+import com.example.exchangecurrencies.main.MainRepository
 import com.example.exchangecurrencies.main.data.di.MainApiProvider
 import com.example.exchangecurrencies.main.data.entity.CurrenciesNetworkModel
 import com.example.exchangecurrencies.main.data.storage.FavoriteCurrenciesDatabase
