@@ -62,33 +62,29 @@ class MainFeatureViewModel @Inject constructor(
 
       }.flowOn(IO)
         .onCompletion {
-          withContext(Dispatchers.Main) {
-            _uiState.value = MainFeatureUIState.Loaded(
-              State().copy(
-                refreshInProgress = false,
-              )
+          _uiState.value = MainFeatureUIState.Loaded(
+            State().copy(
+              refreshInProgress = false,
             )
-          }
+          )
+
         }.flowOn(IO)
         .catch {
-          withContext(Dispatchers.Main) {
-            _uiState.value = MainFeatureUIState.Error(
-              State().copy(
-                message = "$it"
-              )
+          _uiState.value = MainFeatureUIState.Error(
+            State().copy(
+              message = "$it"
             )
-          }
+          )
+
         }.flowOn(IO).collect {
-          withContext(Dispatchers.Main) {
-            _uiState.value = MainFeatureUIState.Loaded(
-              State().copy(
-                rates = it.first,
-                refreshInProgress = false,
-                baseCurrency = it.third,
-                sortConfiguration = it.second
-              )
+          _uiState.value = MainFeatureUIState.Loaded(
+            State().copy(
+              rates = it.first,
+              refreshInProgress = false,
+              baseCurrency = it.third,
+              sortConfiguration = it.second
             )
-          }
+          )
         }
     }
   }
