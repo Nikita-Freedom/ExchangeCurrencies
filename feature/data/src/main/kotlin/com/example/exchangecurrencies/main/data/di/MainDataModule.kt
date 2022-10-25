@@ -77,5 +77,5 @@ class MainDataModule {
 }
 
 internal const val BASE_URL = "https://api.apilayer.com/exchangerates_data"
-internal const val API_KEY = "YDG58vwWI8VjWOG5dmTnjjk9DU8LbBer"
+internal const val API_KEY = "ATb4UAQsZPDFZic6KPMJmOKaYicdtBA2"
 internal const val HTTP_CONNECT_TIMEOUT = 60_000L

@@ -15,7 +15,6 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
@@ -36,7 +35,7 @@ class FavoritesFeatureViewModel @Inject constructor(
 
 
   init {
-    viewModelScope.launch {
+    viewModelScope.launch(IO) {
       observeData()
     }
   }
@@ -101,8 +100,8 @@ class FavoritesFeatureViewModel @Inject constructor(
   }
 
   fun applySortConfiguration(sortConfiguration: SortConfiguration) {
-    viewModelScope.launch {
-      mainModel.favorites(sortConfiguration).flowOn(IO).collect {
+    viewModelScope.launch(IO) {
+      mainModel.favorites(sortConfiguration).collect {
         _uiStateFlow.update { state ->
           state.copy(
             showSortConfigurationDialog = false,
