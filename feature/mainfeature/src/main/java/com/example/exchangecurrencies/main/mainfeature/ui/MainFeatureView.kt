@@ -127,8 +127,7 @@ private fun MainContent(
             onFavoriteClick = onFavoriteClick,
             applySortConfiguration = applySortConfiguration,
             dismissSortConfigurationDialog = dismissSortConfigurationDialog,
-            rates = uiState.state.rates,
-            //isFavorite = uiState.state.isFavorite
+            rates = uiState.state.rates
           )
         } else {
           EmptyContentMessage(
@@ -160,7 +159,6 @@ private fun ContentStateReady(
   onFavoriteClick: (RateDomainModel) -> Unit,
   applySortConfiguration: (SortConfiguration) -> Unit,
   dismissSortConfigurationDialog: () -> Unit,
-  // isFavorite: Boolean
 ) {
   ModalBottomSheetScaffold(
     state = state,
@@ -169,7 +167,6 @@ private fun ContentStateReady(
         onRefresh = onRefresh,
         onFavoriteClick = onFavoriteClick,
         rates = rates,
-        // isFavorite = isFavorite,
       )
     },
     applySortConfiguration = applySortConfiguration,
@@ -183,7 +180,6 @@ private fun ContentMain(
   rates: List<RateDomainModel>,
   onRefresh: () -> Unit,
   onFavoriteClick: (RateDomainModel) -> Unit,
-  //isFavorite: Boolean
 ) {
   Box(
     modifier = modifier
@@ -196,7 +192,6 @@ private fun ContentMain(
       RatesList(
         rates = rates,
         onFavoriteClick = onFavoriteClick,
-        //  isFavorite = isFavorite
       )
     }
   }
@@ -375,7 +370,6 @@ private fun RatesList(
   modifier: Modifier = Modifier,
   rates: List<RateDomainModel>,
   onFavoriteClick: (RateDomainModel) -> Unit,
-  // isFavorite: Boolean
 ) {
   val listState = rememberLazyListState()
   LazyColumn(

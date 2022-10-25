@@ -73,12 +73,13 @@ class FavoritesFeatureViewModel @Inject constructor(
             favoriteRates = it
           )
         )
-//        _uiStateFlow.update { state ->
-//          state.copy(
-//            refreshInProgress = false,
-//            favoriteRates = it
-//          )
-//        }
+      }
+      mainModel.isFavorite.collect { isFavorite ->
+        _uiStateFlow.update { state ->
+          state.copy(
+            isFavorite = isFavorite
+          )
+        }
       }
     }
   }

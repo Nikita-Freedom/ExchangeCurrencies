@@ -37,8 +37,8 @@ class MainFeatureViewModel @Inject constructor(
 
   init {
     viewModelScope.launch(IO) {
-      // mainModel.getAllData(_uiStateFlow.value.baseCurrency)
-      // observeData()
+      mainModel.getAllData(_uiStateFlow.value.baseCurrency)
+      observeData()
     }
   }
 

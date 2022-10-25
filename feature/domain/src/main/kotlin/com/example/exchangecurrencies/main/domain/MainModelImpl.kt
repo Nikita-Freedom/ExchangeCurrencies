@@ -14,6 +14,7 @@ import com.example.exchangecurrencies.main.domain.entity.RateDomainModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
@@ -28,12 +29,12 @@ class MainModelImpl @Inject constructor(
     val allData: CurrencyDomainModel? = null,
     val baseCurrency: String? = null,
     val sortConfiguration: SortConfiguration = createDefaultSortConfiguration(),
-    val rates: List<RateStorageModel> = listOf(),
-    val isFavorite: Boolean = false,
+    val rates: List<RateStorageModel> = listOf()
   )
 
   override val rates: Flow<List<RateDomainModel>>
-    get() = stateFlow.mapDistinctNotNullChanges { it.rates.toDomainRates() }.flowOn(Dispatchers.IO)
+    get() = stateFlow.mapDistinctNotNullChanges { it.rates.toDomainRates(true) }
+      .flowOn(Dispatchers.IO)
 
   override val baseCurrency: Flow<String>
     get() = stateFlow.mapDistinctNotNullChanges { it.baseCurrency }.flowOn(Dispatchers.IO)
@@ -44,8 +45,14 @@ class MainModelImpl @Inject constructor(
   override val sortConfiguration: Flow<SortConfiguration>
     get() = stateFlow.mapDistinctNotNullChanges { it.sortConfiguration }.flowOn(Dispatchers.IO)
 
+  override val isFavorite: Flow<Boolean> = flow<Boolean> {
+    stateFlow.value.rates.forEach {
+      repository.isExists(it.currencyName)
+    }
+  }.flowOn(Dispatchers.IO)
+
   override suspend fun getAllData(currencyName: String): CurrencyDomainModel {
-    val data = repository.getAllData(currencyName).toDomainModel()
+    val data = repository.getAllData(currencyName).toDomainModel(false)
     stateFlow.update { state ->
       state.copy(
         allData = data,
@@ -59,7 +66,7 @@ class MainModelImpl @Inject constructor(
   override suspend fun selectBaseCurrency(currencyName: String) {
     stateFlow.update { state ->
       state.copy(
-        rates = repository.getAllData(currencyName).rates.toDomainMapRates().toStorageRates(),
+        rates = repository.getAllData(currencyName).rates.toDomainMapRates(false).toStorageRates(),
         baseCurrency = currencyName
       )
     }
@@ -69,7 +76,7 @@ class MainModelImpl @Inject constructor(
     stateFlow.update { state ->
       state.copy(
         sortConfiguration = configuration,
-        rates = state.rates.toDomainRates().sort(configuration),
+        rates = state.rates.toDomainRates(false).sort(configuration),
       )
     }
   }
@@ -84,7 +91,7 @@ class MainModelImpl @Inject constructor(
 
   override fun favorites(configuration: SortConfiguration): Flow<List<RateDomainModel>> {
     val data = repository.getFavorites(configuration).mapDistinctNotNullChanges {
-      it.toDomainRates()
+      it.toDomainRates(true)
     }
     return data
   }

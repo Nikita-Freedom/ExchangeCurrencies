@@ -22,7 +22,6 @@ data class State(
     SortConfiguration.SortDirection.Ascending
   ),
   val showSortConfigurationDialog: Boolean = false,
-  val isFavorite: Boolean = false,
   val rates: List<RateDomainModel>? = null,
   val message: String? = null
 )
