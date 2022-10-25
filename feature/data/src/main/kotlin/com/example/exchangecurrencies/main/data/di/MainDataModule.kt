@@ -38,7 +38,7 @@ class MainDataModule {
     val interceptor = Interceptor { chain ->
       val newRequest =
         chain.request().newBuilder()
-          .addHeader("apikey", "YDG58vwWI8VjWOG5dmTnjjk9DU8LbBer")
+          .addHeader("apikey", API_KEY)
           .build()
       chain.proceed(newRequest)
     }
@@ -77,4 +77,5 @@ class MainDataModule {
 }
 
 internal const val BASE_URL = "https://api.apilayer.com/exchangerates_data"
+internal const val API_KEY = "YDG58vwWI8VjWOG5dmTnjjk9DU8LbBer"
 internal const val HTTP_CONNECT_TIMEOUT = 60_000L
