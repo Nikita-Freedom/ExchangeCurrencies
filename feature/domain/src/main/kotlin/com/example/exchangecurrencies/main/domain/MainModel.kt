@@ -10,6 +10,7 @@ interface MainModel {
   val rates: Flow<List<RateDomainModel>>
   val baseCurrency: Flow<String>
   val sortConfiguration: Flow<SortConfiguration>
+  val isFavorite: Flow<Boolean>
 
   suspend fun getAllData(currencyName: String): CurrencyDomainModel
   suspend fun selectBaseCurrency(currencyName: String)

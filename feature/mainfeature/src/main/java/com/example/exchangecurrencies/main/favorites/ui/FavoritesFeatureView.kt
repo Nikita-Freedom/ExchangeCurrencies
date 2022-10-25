@@ -125,8 +125,8 @@ private fun MainContent(
             dismissSortConfigurationDialog = dismissSortConfigurationDialog,
             rates = uiState.state.favoriteRates,
             isRefreshing = uiState.state.refreshInProgress,
-            onFavoriteClick = onFavoriteClick
-            //isFavorite = uiState.state.isFavorite
+            onFavoriteClick = onFavoriteClick,
+            isFavorite = uiStateFlow.isFavorite
           )
         } else {
           EmptyContentMessage(
@@ -159,7 +159,7 @@ private fun ContentStateReady(
   dismissSortConfigurationDialog: () -> Unit,
   isRefreshing: Boolean,
   onFavoriteClick: (RateDomainModel) -> Unit,
-  // isFavorite: Boolean
+  isFavorite: Boolean
 ) {
   ModalBottomSheetScaffold(
     state = state,
@@ -168,8 +168,8 @@ private fun ContentStateReady(
         onRefresh = onRefresh,
         rates = rates,
         isRefreshing = isRefreshing,
-        onFavoriteClick = onFavoriteClick
-        //  isFavorite = isFavorite
+        onFavoriteClick = onFavoriteClick,
+        isFavorite = isFavorite
       )
     },
     applySortConfiguration = applySortConfiguration,
@@ -267,7 +267,7 @@ private fun ContentMain(
   onRefresh: () -> Unit,
   isRefreshing: Boolean,
   onFavoriteClick: (RateDomainModel) -> Unit,
-//  isFavorite: Boolean,
+  isFavorite: Boolean,
 ) {
   Box(
     modifier = modifier.fillMaxSize(),
@@ -280,8 +280,8 @@ private fun ContentMain(
       if (rates.isNotEmpty()) {
         FavoritesList(
           rates = rates,
-          onFavoriteClick = onFavoriteClick
-          //   isFavorite = isFavorite
+          onFavoriteClick = onFavoriteClick,
+          isFavorite = isFavorite
         )
       } else {
         EmptyContentMessage(
@@ -362,7 +362,7 @@ private fun FavoritesList(
   modifier: Modifier = Modifier,
   rates: List<RateDomainModel>,
   onFavoriteClick: (RateDomainModel) -> Unit,
-  // isFavorite: Boolean
+  isFavorite: Boolean
 ) {
   val listState = rememberLazyListState()
 
@@ -377,7 +377,7 @@ private fun FavoritesList(
         RateItem(
           currency = it,
           value = rate.currencyValue.toString(),
-          isFavorite = rate.isFavorite,
+          isFavorite = isFavorite,
           onFavoriteClick = { onFavoriteClick(rate) },
         )
       }

@@ -5,11 +5,11 @@ import com.example.exchangecurrencies.main.data.storage.entity.RateStorageModel
 import com.example.exchangecurrencies.main.domain.entity.CurrencyDomainModel
 import com.example.exchangecurrencies.main.domain.entity.RateDomainModel
 
-fun CurrenciesNetworkModel.toDomainModel(): CurrencyDomainModel {
+fun CurrenciesNetworkModel.toDomainModel(isFavorite: Boolean): CurrencyDomainModel {
   return CurrencyDomainModel(
     base = this.base,
     date = this.date,
-    rateDomainModels = this.rates.toDomainMapRates(),
+    rateDomainModels = this.rates.toDomainMapRates(isFavorite),
     success = this.success,
     timestamp = this.timestamp
   )
@@ -35,32 +35,25 @@ fun List<RateDomainModel>.toStorageRates(): List<RateStorageModel> {
   }
 }
 
-fun Map<String, Double>.toRates(): List<RateStorageModel> {
-  return this.map {
-    RateStorageModel(
-      currencyName = it.key,
-      currencyValue = it.value
-    )
-  }
-}
 fun List<RateStorageModel>.toDomainRates(
-//  isFavorite: Boolean
+  isFavorite: Boolean
 ): List<RateDomainModel> {
   return this.map {
     RateDomainModel(
       id = it.rateId,
       currencyName = it.currencyName,
       currencyValue = it.currencyValue,
-      isFavorite = true
+      isFavorite = isFavorite
     )
   }
 }
 
-fun Map<String, Double>.toDomainMapRates(): List<RateDomainModel> {
+fun Map<String, Double>.toDomainMapRates(isFavorite: Boolean): List<RateDomainModel> {
   return this.map {
     RateDomainModel(
       currencyName = it.key,
-      currencyValue = it.value
+      currencyValue = it.value,
+      isFavorite = isFavorite
     )
   }
 }

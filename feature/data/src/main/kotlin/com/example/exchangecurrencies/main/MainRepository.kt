@@ -10,6 +10,6 @@ interface MainRepository {
   fun allData(currencyName: String): Flow<CurrenciesNetworkModel>
   suspend fun addOrRemoveFromFavorites(rate: RateStorageModel)
   suspend fun removeALl()
-  suspend fun isExists(currencyName: String): Boolean
+  suspend fun isExists(currencyName: String?): Boolean
   fun getFavorites(sortConfiguration: SortConfiguration): Flow<List<RateStorageModel>>
 }

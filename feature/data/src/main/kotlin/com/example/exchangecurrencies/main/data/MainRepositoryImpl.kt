@@ -41,7 +41,7 @@ class MainRepositoryImpl @Inject constructor(
     database.favoriteRatesDao().deleteAll()
   }
 
-  override suspend fun isExists(currencyName: String): Boolean {
+  override suspend fun isExists(currencyName: String?): Boolean {
     return database.favoriteRatesDao().exists(currencyName)
   }
 

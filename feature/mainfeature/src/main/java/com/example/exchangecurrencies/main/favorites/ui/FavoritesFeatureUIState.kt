@@ -25,5 +25,5 @@ data class State(
   val refreshInProgress: Boolean = false,
   val isNextPageLoading: Boolean = false,
   val confirmCancelDialog: TransientComponentState<Long> = TransientComponentState.None,
-  // val isFavorite: Boolean = false,
+  val isFavorite: Boolean = false,
 )
